@@ -1,5 +1,5 @@
 # --- Build Stage ---
-FROM maven:3.9.9-eclipse-temurin-21-alpine AS builder
+FROM maven:3.9.9-eclipse-temurin-21 AS builder
 
 WORKDIR /app
 
@@ -11,15 +11,15 @@ RUN mvn dependency:go-offline -B
 # Then copy the source code
 COPY src ./src
 
-# Build the JAR
+# Build the JAR (skip tests to save time)
 RUN mvn clean package -DskipTests
 
 # --- Runtime Stage ---
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:21-jre
 
 WORKDIR /app
 
-# Copy from "builder" (not "build" – name mismatch was your issue)
+# Copy built jar from builder
 COPY --from=builder /app/target/billing_service-0.0.1-SNAPSHOT.jar ./app.jar
 
 EXPOSE 4001
